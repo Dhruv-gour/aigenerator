@@ -1,25 +1,10 @@
 import { GoogleGenAI } from "@google/genai";
 import { FormData, MindMapResult } from "../types";
 
-// =========================================================================================
-// ⚠️ DEPLOYMENT INSTRUCTIONS:
-// If the app says "API Key is missing" on Netlify/Vercel:
-// 1. Get your API Key from Google AI Studio (https://aistudio.google.com/).
-// 2. Paste your key inside the empty quotes below.
-//    Example: const API_KEY = "AIzaSyB_RQkwhGIVyfI2DbO0yCklWSEyU7ZV_hg";
-// =========================================================================================
-
-const API_KEY = process.env.API_KEY || "AIzaSyB_RQkwhGIVyfI2DbO0yCklWSEyU7ZV_hg"; 
-
 export const generateMindMap = async (data: FormData): Promise<MindMapResult> => {
   
-  // Validation to help you debug deployment
-  if (!API_KEY || API_KEY.length < 10) {
-    throw new Error("API Key is missing. Please open 'services/geminiService.ts' and paste your API Key in the API_KEY variable at the top of the file.");
-  }
-
-  const ai = new GoogleGenAI({ apiKey: API_KEY });
-  const model = "gemini-2.5-flash"; // Fastest model
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const model = "gemini-2.5-flash"; 
   
   const prompt = `
     You are a CBSE exam expert. 
@@ -68,13 +53,12 @@ export const generateMindMap = async (data: FormData): Promise<MindMapResult> =>
       model: model,
       contents: prompt,
       config: {
-        temperature: 0.5, // Lower temperature for more focused/faster output
+        temperature: 0.5,
       }
     });
 
     const text = response.text || "";
 
-    // Parse logic
     const svgMatch = text.match(/=== START_SVG ===([\s\S]*?)=== END_SVG ===/);
     const textMatch = text.match(/=== START_TEXT ===([\s\S]*?)=== END_TEXT ===/);
 
@@ -82,20 +66,24 @@ export const generateMindMap = async (data: FormData): Promise<MindMapResult> =>
     const markdown = textMatch ? textMatch[1].trim() : text; 
 
     if (!svg && !markdown) {
-      throw new Error("AI generated empty content.");
+      throw new Error("The AI responded, but generated empty content.");
     }
 
     return { svg, markdown };
 
   } catch (error: any) {
-    console.error("Gemini API Error:", error);
+    console.error("RAW GEMINI ERROR:", error);
     
-    // Pass through our specific API key error so the user sees it in the UI
-    if (error.message.includes("API Key")) {
-        throw error;
+    let originalMessage = "Unknown Error";
+    if (error instanceof Error) {
+        originalMessage = error.message;
+    } else if (typeof error === 'string') {
+        originalMessage = error;
+    } else {
+        originalMessage = JSON.stringify(error);
     }
-    
-    // Handle generic network or API errors
-    throw new Error("Failed to generate. Please check connection.");
+
+    // Throw the RAW message
+    throw new Error(`DEBUG ERROR: ${originalMessage}`);
   }
 };

@@ -1,0 +1,5 @@
+{
+  "name": "Mind Map Generator",
+  "description": "A mobile-first tool for CBSE students (Class 9-12) to generate exam-focused study mind maps.",
+  "requestFramePermissions": []
+}

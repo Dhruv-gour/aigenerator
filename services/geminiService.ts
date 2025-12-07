@@ -9,7 +9,7 @@ import { FormData, MindMapResult } from "../types";
 //    Example: const API_KEY = "AIzaSyB_RQkwhGIVyfI2DbO0yCklWSEyU7ZV_hg";
 // =========================================================================================
 
-const API_KEY = "AIzaSyB_RQkwhGIVyfI2DbO0yCklWSEyU7ZV_hg"; 
+const API_KEY = process.env.API_KEY || "AIzaSyB_RQkwhGIVyfI2DbO0yCklWSEyU7ZV_hg"; 
 
 export const generateMindMap = async (data: FormData): Promise<MindMapResult> => {
   
